@@ -1,0 +1,47 @@
+-- [Problem 2]
+
+accounts(_username_, email_add, website_url, open_time, sub_price, acc_type)
+* url is also a candidate key
+
+package_uses(_username_, _pack_name_, _version_)
+* (username, pack_name, version) is a primary key 
+* username is a foreign key to accounts.username
+* (pack_name, version) is a foreign key to (package.pack_name, package.version)
+
+packages(_pack_name_, _version_, description, pack_price)
+
+
+installed_tracks(_pack_name_, _version_, _hostname_)
+* (pack_name, version, hostname) is a primary key 
+* (pack_name, version) is a foreign key to (package.pack_name, package.version)
+* hostname is a foreign key to servers.hostname
+
+
+servers(_hostname_, os_type, max_sites, server_type)
+
+shared_server(_hostname_)
+* hostname is a foreign key to server.hostname
+
+dedi_server(_hostname_)
+* hostname is a foreign key to server.hostname
+
+
+basic_acc(_username_, hostname)
+* username is a foreign key to account.username 
+* hostname is a foreign key to shared_server.hostname 
+* To enforce total participation constraint to ensure that every basic_acc has an                 associated shared_server, we use NOT NULL constraint on hostname
+
+pref_acc(_username_, hostname)
+* hostname is also a candidate key
+* username is a foreign key to account.username 
+* hostname is a foreign key to shared_server.hostname 
+* To enforce total participation constraint to ensure that every pref_acc has an associated dedi_server, we use NOT NULL constraint on hostname
+
+
+
+
+
+
+
+
+

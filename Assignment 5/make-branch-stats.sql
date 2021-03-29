@@ -1,6 +1,7 @@
 -- [Problem 1]
 -- Write the index definition.
 
+
 CREATE INDEX idx_account ON account(branch_name, balance);
 
 -- [Problem 2]
@@ -75,11 +76,13 @@ BEGIN
     CALL pro_inserts (NEW.branch_name, NEW.balance);
 END ?
 
+
 DELIMITER ;
 
 -- [Problem 6]
 -- Write the trigger (and related procedures) to handle deletes.
 
+DROP PROCEDURE IF EXISTS pro_deletes_min_max;
 
 DELIMITER ! 
 
@@ -89,12 +92,19 @@ CREATE PROCEDURE pro_deletes_min_max (
 )
 
 BEGIN 
-    IF curr = LEAST(min_balance, curr)
+	DECLARE min_bal NUMERIC (12,2);
+	DECLARE max_bal NUMERIC (12,2);
+    SELECT (SELECT min_balance FROM mv_branch_account_stats 
+    WHERE branch_name = branch_name_del) INTO min_bal;
+    SELECT (SELECT max_balance FROM mv_branch_account_stats 
+    WHERE branch_name = branch_name_del) INTO max_bal;
+
+    IF curr = LEAST(min_bal, curr)
     THEN UPDATE mv_branch_account_stats 
     SET min_balance = (SELECT MIN(balance) FROM account
     WHERE branch_name = branch_name_del) WHERE branch_name = branch_name_del;
     
-    ELSEIF curr = GREATEST(max_balance, curr)
+    ELSEIF curr = GREATEST(max_bal, curr)
     THEN UPDATE mv_branch_account_stats 
     SET max_balance = (SELECT MAX(balance) FROM account
     WHERE branch_name = branch_name_del) WHERE branch_name = branch_name_del;
@@ -102,20 +112,21 @@ BEGIN
 
 END !
 
+DELIMITER !
 
 CREATE PROCEDURE pro_deletes (
     IN branch_name_del VARCHAR(15),
     IN curr NUMERIC(12, 2) 
 )
 BEGIN
-     DELETE FROM mv_branch_stats WHERE branch_name = branch_name_del
+     DELETE FROM mv_branch_account_stats WHERE branch_name = branch_name_del
      AND num_accounts = 1; 
      
      IF branch_name_del IN (SELECT branch_name FROM mv_branch_account_stats)
      THEN UPDATE mv_branch_account_stats 
-     SET num_accounts = num_accounts + 1,
+     SET num_accounts = num_accounts - 1,
      total_deposits = total_deposits - curr
-     WHERE branch_anme = branch_name_del;
+     WHERE branch_name = branch_name_del;
      
      CALL pro_deletes_min_max(branch_name_del, curr);
      END IF;
@@ -129,12 +140,12 @@ BEGIN
 
 END ! 
 
-DELIIMITER ;
+DELIMITER ;
      
-
 
 -- [Problem 7]
 -- Write the trigger (and related procedures) to handle updates.
+
 
 DELIMITER ?
 -- Didn't realize that I would have to make a separate procedure 
@@ -146,14 +157,20 @@ CREATE PROCEDURE pro_inserts_min_max (
     IN curr NUMERIC(12, 2) 
 )
 BEGIN
-    
-    IF curr = LEAST(min_balance, curr)
+	DECLARE min_bal NUMERIC (12,2);
+	DECLARE max_bal NUMERIC (12,2);
+    SELECT (SELECT min_balance FROM mv_branch_account_stats 
+    WHERE branch_name = branch_name_ins) INTO min_bal;
+    SELECT (SELECT max_balance FROM mv_branch_account_stats 
+    WHERE branch_name = branch_name_ins) INTO max_bal;
+
+    IF curr = LEAST(min_bal, curr) 
     THEN UPDATE mv_branch_account_stats 
-    SET min_balance = curr WHERE branch_name = branch_name_del;
+    SET min_balance = curr WHERE branch_name = branch_name_ins;
     
-    ELSEIF curr = GREATEST(max_balance, curr)
+    ELSEIF curr = GREATEST(max_bal, curr)
     THEN UPDATE mv_branch_account_stats 
-    SET max_balance = curr WHERE branch_name = branch_name_del;
+    SET max_balance = curr WHERE branch_name = branch_name_ins;
     END IF;
 
 END ? 

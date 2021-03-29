@@ -1,0 +1,54 @@
+Write the relational model schema for your airline database in this file, using
+the notation we have used all term.  You can indicate primary key columns by
+enclosing the attribute names in _ characters.  Include descriptions of other
+candidate keys or foreign keys (if any) immediately under each relation schema.
+Example:
+
+foo(_a_, b, c)
+ * b is also a candidate key
+ * c is a foreign key to bar.c
+------------------------------------------------------------------------------
+
+-- [Problem 4]
+
+flight(_flight_num_, _flight_date_, flight_time, sour_airport, dest_airport, is_domestic, type_code)
+ * type_code is a foreign key to airplane.type_code 
+ * We use NOT NULL constraint on type_code to account for full participation of flight to airplane (since every flight needs one airplane)
+
+airplane(_type_code_, company, model)
+ * company, model is also a candidate key 
+
+seat(_seat_num_, _type_code_, seat_class, seat_type, flag_exit)
+ * type_code is a foreign key to airplane.type_code
+
+ticket(_ticket_id_, ticket_price, purchase_id, customer_id)
+ * purchase_id is a foreign key to purchase.purchase_id 
+ * customer_id is a foreign key to traveler.customer_id 
+
+ticket_info(_flight_num_, _flight_date_, _type_code_, _seat_num_, ticket_id)
+ * ticket_id is also a candidate key
+ * flight_num is a foreign key to flight.flight_num
+ * flight_date is a foreign key to flight.flight_date
+ * type_code is a foreign key to airplane.type_code
+ * seat_num is a foreign key to seat.seat_number
+ * ticket_id is a foreign key to ticket.ticket_id
+
+purchase(_purchase_id_, purchase_date, confirm_num, customer_id)
+ * confirm_num is also a candidate key 
+ * customer_id is a foreign key to purchaser.customer_id
+ * We use NOT NULL constraint on customer_id to account for full participation of purchase to customer (since every purchaser would be a customer)
+
+
+purchaser(_customer_id_, card_num, exp_date, ver_code)
+ * customer_id is a foreign key to customer.customer_id 
+
+traveler(_customer_id_, passport_num, country, emergency_name, emergency_contact, freq_fly_num)
+ * customer_id is a foreign key to customer.customer_id 
+
+customer(_customer_id_, first_name, last_name, email) 
+
+customer_phone(_customer_id_, _phone_num_)
+ * customer_id is a foreign key to customer.customer_id 
+ * Need this since we know that each customer can have multiple phone numbers.
+
+

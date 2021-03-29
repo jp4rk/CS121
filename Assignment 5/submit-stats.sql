@@ -8,7 +8,10 @@
 -- Thus, we add check if the ans is null for the initial state
 -- (since it starts off with having a null value). 
 
-DROP FUNCTION min_submit_interval;
+USE grades;
+
+DROP FUNCTION IF EXISTS min_submit_interval;
+
 
 DELIMITER !
 
@@ -57,7 +60,7 @@ DELIMITER ;
 -- Setting default as 0 for ans so that ISNULL function is not
 -- needed for the if statement.
 
-DROP FUNCTION max_submit_interval;
+DROP FUNCTION IF EXISTS max_submit_interval;
 
 DELIMITER ! 
 
@@ -104,17 +107,25 @@ DELIMITER ;
 -- of the submission being investigated.  The return-value 
 -- should be the result inseconds. Returns DOUBLE.
 
-DROP FUNCTION avg_submit_interval;
+DROP FUNCTION IF EXISTS avg_submit_interval;
+
 
 DELIMITER ! 
 
 CREATE FUNCTION avg_submit_interval(sub_id INT) RETURNS DOUBLE DETERMINISTIC
 BEGIN
-    RETURN (SELECT (UNIX_TIMESTAMP(MAX(sub_date)) - 
+    DECLARE avg_time DOUBLE;
+
+    SELECT (UNIX_TIMESTAMP(MAX(sub_date)) - 
         UNIX_TIMESTAMP(MIN(sub_date))) / (COUNT(*) - 1)
-    FROM fileset WHERE fileset.sub_id = sub_id);
+    FROM fileset WHERE fileset.sub_id = sub_id INTO avg_time;
+    
+    RETURN avg_time;
 	
 END ! 
+
+SELECT avg_submit_interval(4059);
+
 
 DELIMITER ; 
 
@@ -122,7 +133,6 @@ DELIMITER ;
 -- Create an index on ​fileset​ thatwill dramatically speed up the query.
 -- Duration time from 1.123 to 0.164 sec. 
 
-DROP INDEX idx_fileset ON fileset;
  
 CREATE INDEX idx_fileset ON fileset(sub_id, sub_date);
 
